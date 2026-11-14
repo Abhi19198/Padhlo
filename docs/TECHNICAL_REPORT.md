@@ -1,4 +1,4 @@
-# 📄 ConceptCrush. Technical Architecture Report
+# 📄 Padhlo. Technical Architecture Report
 
 **Version:** 2.0 (Dynamic Engine) | **Author:** AI Development Partner
 
@@ -6,7 +6,7 @@
 
 ## 1. Project Overview
 
-**ConceptCrush.** is a high-performance, single-page educational platform designed for Computer Science students. It provides interactive, data-driven career roadmaps with a premium "Tron-inspired" aesthetic.
+**Padhlo.** is a high-performance, single-page educational platform designed for Computer Science students. It provides interactive, data-driven career roadmaps with a premium "Tron-inspired" aesthetic.
 
 ## 2. Technology Stack
 
@@ -60,10 +60,10 @@ The application follows a **"Single Source of Truth"** pattern. Everything you s
 
 ## 5. Optimization & Scalability
 
-- **Traffic Handling**: The pure JS architecture means no server-side processing is required, allowing it to handle millions of users with ease.
+- **Traffic Handling**: The pure JS architecture means no server-side processing is required, there is no server-side processing, so it can be hosted as plain static files.
 - **Adaptability**: To add a new skill (e.g., "AI Engineering"), you only need to add one object to `data.js`. The UI will adapt automatically.
 - **Modern UX**: Features custom scrollbars, glassmorphism, and direct links to YouTube playlists.
 
 ---
 
-_Generated for the developer of ConceptCrush._
+_Generated for the developer of Padhlo._

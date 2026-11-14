@@ -1,5 +1,5 @@
 /**
- * ConceptCrush. Engine v2.0
+ * Padhlo. Engine v2.0
  * Pure JS Component-Based Architecture for High Scalability
  */
 
@@ -18,7 +18,7 @@ const AppEngine = {
 
     // Initialization
     init() {
-        console.log("%c🚀 ConceptCrush. Engine v3.0 (Complex Mode)", "color: #ff003c; font-weight: bold; font-size: 1.2rem;");
+        console.log("%c🚀 Padhlo. Engine v3.0 (Complex Mode)", "color: #ff003c; font-weight: bold; font-size: 1.2rem;");
         this.initStateManagement();
         this.cacheDOM();
         this.initComplexSystems();
@@ -178,11 +178,11 @@ const AppEngine = {
                                     <div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div>
                                 </div>
                                 <div class="code-editor">
-                                    <div class="code-line"><span>const</span> project = "ConceptCrush";</div>
+                                    <div class="code-line"><span>const</span> project = "Padhlo";</div>
                                     <div class="code-line"><span>function</span> build() { return "Growth"; }</div>
                                     <div class="code-line">console.log("Future Ready...");</div>
                                     <!-- Loop Buffer -->
-                                    <div class="code-line"><span>const</span> project = "ConceptCrush";</div>
+                                    <div class="code-line"><span>const</span> project = "Padhlo";</div>
                                     <div class="code-line"><span>function</span> build() { return "Growth"; }</div>
                                 </div>
                             </div>
@@ -493,7 +493,7 @@ const AppEngine = {
 
     // --- AUTH SYSTEM ---
     initAuth() {
-        const savedUser = localStorage.getItem('cc_user');
+        const savedUser = localStorage.getItem('padhlo_user');
         if (savedUser) {
             this.state.user = JSON.parse(savedUser);
             this.state.isLoggedIn = true;
@@ -523,7 +523,7 @@ const AppEngine = {
     },
 
     logout() {
-        localStorage.removeItem('cc_user');
+        localStorage.removeItem('padhlo_user');
         this.state.user = null;
         this.state.isLoggedIn = false;
         this.navigateTo(null); // Back to home
@@ -538,6 +538,7 @@ const AppEngine = {
                 <div style="background: linear-gradient(to right, #ff9d00, #ff4d00); padding: 25px; text-align: center;">
                     <h2 style="color: #000; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; font-size: 1.2rem;">NEURAL ACCESS CONTROL</h2>
                     <p style="color: #000; font-size: 0.75rem; font-weight: 700; opacity: 0.8;">C.O.D.E.X. SECURE PROTOCOL v4.0</p>
+                    <p style="color: #000; font-size: 0.75rem; margin-top: 6px;">Demo login only — accounts are stored in this browser, not on a server. Do not reuse a real password.</p>
                 </div>
                 <div style="padding: 35px;">
                     <div class="auth-tabs" style="border-bottom: 2px solid rgba(255,157,0,0.1); margin-bottom: 30px;">
@@ -619,19 +620,18 @@ const AppEngine = {
     handleLogin(email, pass, closeFn) {
         const errorEl = document.getElementById('auth-error');
         
-        // --- CODES SECURITY ENFORCEMENT ---
-        // Pre-seeded Admin/User
-        const adminEmail = "codex@agent.ai";
-        const adminPass = "concept_crush";
-        
-        const users = JSON.parse(localStorage.getItem('cc_users') || '[]');
-        const foundUser = users.find(u => u.email === email && u.pass === pass) || 
-                         (email === adminEmail && pass === adminPass ? { name: "Lead Explorer", email: adminEmail } : null);
+        // Demo-only local auth: accounts live in this browser's localStorage.
+        // There is intentionally no backdoor / hard-coded account here.
+        // Passwords are stored in plain text in localStorage, so never
+        // reuse a real password. See README "Security notes".
+        const users = JSON.parse(localStorage.getItem('padhlo_users') || '[]');
+        const foundUser = users.find(u => u.email === email && u.pass === pass);
 
         if (foundUser) {
             this.showNotification("CODEX: Access Signature Verified. Welcome back, " + foundUser.name, "ai");
-            this.state.user = foundUser;
-            localStorage.setItem('cc_user', JSON.stringify(foundUser));
+            // Session stores identity only — never the password.
+            this.state.user = { name: foundUser.name, email: foundUser.email };
+            localStorage.setItem('padhlo_user', JSON.stringify(this.state.user));
             this.state.isLoggedIn = true;
             closeFn();
         } else {
@@ -646,7 +646,7 @@ const AppEngine = {
         const pass = document.getElementById('signup-pass').value;
         
         const newUser = { name, email, pass };
-        const users = JSON.parse(localStorage.getItem('cc_users') || '[]');
+        const users = JSON.parse(localStorage.getItem('padhlo_users') || '[]');
         
         // Check if email already exists
         if (users.some(u => u.email === email)) {
@@ -655,11 +655,12 @@ const AppEngine = {
         }
 
         users.push(newUser);
-        localStorage.setItem('cc_users', JSON.stringify(users));
-        localStorage.setItem('cc_user', JSON.stringify(newUser));
+        localStorage.setItem('padhlo_users', JSON.stringify(users));
+        // Session stores identity only — never the password.
+        localStorage.setItem('padhlo_user', JSON.stringify({ name, email }));
         
         this.showNotification(`CODEX: Neural Signature Created for Explorer ${name}. Welcome to the grid.`, "ai");
-        this.state.user = newUser;
+        this.state.user = { name, email };
         this.state.isLoggedIn = true;
         closeFn();
     },
@@ -672,9 +673,9 @@ const AppEngine = {
 
         // Track daily visits
         const today = new Date().toDateString();
-        const lastVisit = localStorage.getItem('cc_last_visit');
+        const lastVisit = localStorage.getItem('padhlo_last_visit');
         if (lastVisit !== today) {
-            localStorage.setItem('cc_last_visit', today);
+            localStorage.setItem('padhlo_last_visit', today);
             this.state.visitedToday = 0;
             setTimeout(() => this.showNotification("CODEX: Daily trajectory reset. Initiating new learning cycle.", "ai"), 2000);
         }
@@ -710,7 +711,7 @@ const AppEngine = {
 
     getAITip(visitedCount) {
         const tips = [
-            "CODEX Analysis: Probability of success increases by 40% if we master " + (skillsData[visitedCount]?.title || 'algorithms') + " today.",
+            "CODEX Analysis: Mastering " + (skillsData[visitedCount]?.title || 'algorithms') + " today — small steps compound.",
             "I've analyzed the global job market; specializing in AI seems prudent.",
             "Data suggests practical implementation is your strongest learning vector.",
             "Strategic trajectory suggests a Senior level proficiency within months.",
@@ -721,10 +722,10 @@ const AppEngine = {
 
     trackProgress() {
         window.addEventListener('skillVisited', (e) => {
-            let visited = JSON.parse(localStorage.getItem('cc_visited') || '[]');
+            let visited = JSON.parse(localStorage.getItem('padhlo_visited') || '[]');
             if (!visited.includes(e.detail.id)) {
                 visited.push(e.detail.id);
-                localStorage.setItem('cc_visited', JSON.stringify(visited));
+                localStorage.setItem('padhlo_visited', JSON.stringify(visited));
                 this.state.visitedToday++;
                 this.showNotification(`CODEX: Knowledge logged for ${e.detail.title}. Database updated.`, "ai");
             }
@@ -879,7 +880,7 @@ const AppEngine = {
     },
 
     renderJourneyPage() {
-        const visited = JSON.parse(localStorage.getItem('cc_visited') || '[]');
+        const visited = JSON.parse(localStorage.getItem('padhlo_visited') || '[]');
         const progressPercent = Math.round((visited.length / skillsData.length) * 100);
         
         // Circular Progress Math

@@ -50,7 +50,7 @@ const skillsData = [
         link: "https://www.theodinproject.com/",
       },
       { name: "Full Stack Open (Free)", link: "https://fullstackopen.com/" },
-      { name: "Udemy - Colt Steele", link: "#" },
+      { name: "Udemy - Colt Steele", link: "https://www.udemy.com/course/the-web-developer-bootcamp/" },
     ],
     practice: [
       { topic: "Basic DOM Manipulation", difficulty: "Beginner" },
@@ -68,7 +68,7 @@ const skillsData = [
     id: "app-development",
     title: "App Development",
     icon: "📱",
-    themeColor: "#ff073a",
+    themeColor: "#00c2ff",
     difficulty: "Moderate",
     expertTip: "Mastering Dart (for Flutter) or JavaScript (for React Native) is the key to smooth app performance.",
     shortDesc:
@@ -107,8 +107,8 @@ const skillsData = [
       { name: "The Net Ninja", link: "https://youtube.com/c/TheNetNinja/playlists" },
     ],
     courses: [
-      { name: "Flutter & Dart - The Complete Guide (Udemy)", link: "#" },
-      { name: "React Native - The Practical Guide", link: "#" },
+      { name: "Flutter & Dart - The Complete Guide (Udemy)", link: "https://www.udemy.com/course/learn-flutter-dart-to-build-ios-android-apps/" },
+      { name: "React Native - Official Docs", link: "https://reactnative.dev/" },
     ],
     practice: [
       { topic: "Build UI Layouts", difficulty: "Beginner" },
@@ -128,7 +128,7 @@ const skillsData = [
     id: "data-science",
     title: "Data Science",
     icon: "📊",
-    themeColor: "#ff073a",
+    themeColor: "#ffb800",
     difficulty: "Advanced",
     expertTip: "Don't just learn library syntax; understand the underlying statistics and math.",
     shortDesc: "Analyze data to find trends & patterns using Python & SQL.",
@@ -164,7 +164,7 @@ const skillsData = [
     ],
     courses: [
       { name: "Kaggle Courses (Free)", link: "https://www.kaggle.com/learn" },
-      { name: "Coursera - Andrew Ng", link: "#" },
+      { name: "Coursera - Machine Learning Specialization (Andrew Ng)", link: "https://www.coursera.org/specializations/machine-learning-introduction" },
     ],
     practice: [
       { topic: "Pandas Data Cleaning", difficulty: "Beginner" },
@@ -174,14 +174,14 @@ const skillsData = [
     sampleCode: [
       "import pandas as pd",
       "df = pd.read_csv('data')",
-      "df.predict('Success')"
+      "print(df.describe())"
     ]
   },
   {
     id: "cyber-security",
     title: "Cyber Security",
     icon: "🔒",
-    themeColor: "#ff073a",
+    themeColor: "#00e676",
     difficulty: "Very Advanced",
     expertTip: "Networking is the backbone of security. Learn TCP/IP and OSI model like the back of your hand.",
     shortDesc: "Protect systems & networks from digital attacks.",
@@ -224,21 +224,21 @@ const skillsData = [
       { topic: "OWASP Top 10", difficulty: "Advanced" },
     ],
     projects: [
-      "Keylogger (Educational)",
+      "Password Strength Checker (Educational)",
       "Network Scanner",
       "Vulnerability Scanner",
     ],
     sampleCode: [
       "nmap -sV target.ip",
       "chmod +x exploit.py",
-      "sudo ./hack.sh"
+      "nmap -sV 127.0.0.1"
     ]
   },
   {
     id: "ai-ml",
     title: "AI & Machine Learning",
     icon: "🧠",
-    themeColor: "#ff073a",
+    themeColor: "#a855f7",
     difficulty: "Advanced",
     expertTip: "Start with Scikit-learn to understand patterns before moving to heavy Deep Learning models.",
     shortDesc: "Teach computers to learn and make decisions.",
@@ -291,7 +291,7 @@ const skillsData = [
     id: "cloud-computing",
     title: "Cloud Computing",
     icon: "☁️",
-    themeColor: "#ff073a",
+    themeColor: "#4f8cff",
     difficulty: "Moderate",
     expertTip: "Infrastructure as Code (Terraform) is as important as the Cloud provider itself.",
     shortDesc: "Manage servers & services on AWS, Azure, or Google Cloud.",
@@ -344,7 +344,7 @@ const skillsData = [
     id: "devops",
     title: "DevOps",
     icon: "♾️",
-    themeColor: "#ff073a",
+    themeColor: "#ff8e3c",
     difficulty: "Advanced",
     expertTip: "Automate everything. If you have to do it twice, it should be a script.",
     shortDesc: "Bridge the gap between Development and Operations.",
@@ -380,7 +380,6 @@ const skillsData = [
     ],
     courses: [
       { name: "KodeKloud", link: "https://kodekloud.com/" },
-      { name: "Udemy - DevOps Bootcamp", link: "#" },
     ],
     practice: [
       { topic: "Write a cleanup bash script", difficulty: "Beginner" },
@@ -397,7 +396,7 @@ const skillsData = [
     id: "game-development",
     title: "Game Development",
     icon: "🎮",
-    themeColor: "#ff073a",
+    themeColor: "#ff4fd8",
     difficulty: "Advanced",
     expertTip: "Finish small games first. Scope creep is the biggest enemy of game devs.",
     shortDesc: "Create 2D/3D games using Unity (C#) or Unreal (C++).",
@@ -451,7 +450,7 @@ const skillsData = [
     id: "blockchain",
     title: "Blockchain & Web3",
     icon: "🔗",
-    themeColor: "#ff073a",
+    themeColor: "#facc15",
     difficulty: "Very Advanced",
     expertTip: "Security is everything in Web3. One bug in a contract can lose millions. Audit your code.",
     shortDesc: "Build decentralized apps (dApps) using Solidity.",
@@ -505,7 +504,7 @@ const skillsData = [
     id: "ui-ux",
     title: "UI/UX Design",
     icon: "🎨",
-    themeColor: "#ff073a",
+    themeColor: "#ff6b81",
     difficulty: "Beginner Friendly",
     expertTip: "Good design is invisible. Focus on the user's journey, not just pretty colors.",
     shortDesc: "Design beautiful and usable interfaces using Figma.",

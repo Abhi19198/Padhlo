@@ -1101,6 +1101,7 @@ a {
 .badge-beginner { color: #ff6b81; background: rgba(255, 107, 129, 0.1); }
 .badge-moderate { color: #ff8e3c; background: rgba(255, 142, 60, 0.1); }
 .badge-advanced { color: #ff003c; background: rgba(255, 0, 60, 0.1); }
+.badge-very { color: #b537f2; background: rgba(181, 55, 242, 0.12); } /* 'Very Advanced' — was unstyled, badge rendered with no colours */
 
 .expert-tip-card {
     background: linear-gradient(135deg, rgba(255,0,60,0.1), rgba(255,77,0,0.1));
@@ -1471,6 +1472,20 @@ a {
     font-size: 0.8rem;
     color: #ff9d00;
 }
+
+/* CODEX Notifications — portal was created by JS but never positioned,
+   so toasts rendered unstyled in normal flow at the end of <body>. */
+.notification-portal {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+.notification-portal .jarvis-notif { pointer-events: auto; }
 
 /* CODEX Notifications */
 .jarvis-notif {

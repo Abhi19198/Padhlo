@@ -1,4 +1,4 @@
-# 🚀 ConceptCrush. Technology Deep Dive
+# 🚀 Padhlo. Technology Deep Dive
 
 This report explains the **WHY** and **HOW** behindEvery technical decision made in this project.
 
@@ -79,4 +79,4 @@ Instead of having 10 different `.html` files, we have **one**. When you click a 
 
 ---
 
-_This architecture was chosen to make ConceptCrush. the fastest, most scalable, and visually unique platform possible._
+_This architecture was chosen to make Padhlo. the fastest, most scalable, and visually unique platform possible._

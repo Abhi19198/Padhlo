@@ -80,11 +80,38 @@ npm test        # node --test on the files in tests/ (Node 18+; no dependencies 
 
 ## CI
 
-`.github/workflows/ci.yml` runs `npm test` plus `node --check` on the JS
-files on every push / pull request. It needs the **Workflows** permission on
-the GitHub App installation to be added via the API; if the workflow file
-cannot be pushed by automation, add it manually from this repo (the file is
-checked in and ready).
+CI is prepared but **not yet live**: pushing `.github/workflows/ci.yml`
+through the API is blocked with `403 Resource not accessible by
+integration` — the GitHub App installation for this repo does not have the
+**Workflows** permission. Until that permission is granted (repo Settings →
+GitHub Apps), add the workflow manually: in the GitHub web UI, create
+`.github/workflows/ci.yml` on `main` with exactly this content:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Syntax check
+        run: npm run check
+      - name: Tests
+        run: npm test
+```
+
+It runs `npm run check` (`node --check` on the JS files) and `npm test` on
+every push / pull request to `main`.
 
 ## Contributing
 

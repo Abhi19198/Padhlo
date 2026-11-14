@@ -538,6 +538,7 @@ const AppEngine = {
                 <div style="background: linear-gradient(to right, #ff9d00, #ff4d00); padding: 25px; text-align: center;">
                     <h2 style="color: #000; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; font-size: 1.2rem;">NEURAL ACCESS CONTROL</h2>
                     <p style="color: #000; font-size: 0.75rem; font-weight: 700; opacity: 0.8;">C.O.D.E.X. SECURE PROTOCOL v4.0</p>
+                    <p style="color: #000; font-size: 0.75rem; margin-top: 6px;">Demo login only — accounts are stored in this browser, not on a server. Do not reuse a real password.</p>
                 </div>
                 <div style="padding: 35px;">
                     <div class="auth-tabs" style="border-bottom: 2px solid rgba(255,157,0,0.1); margin-bottom: 30px;">
@@ -619,19 +620,18 @@ const AppEngine = {
     handleLogin(email, pass, closeFn) {
         const errorEl = document.getElementById('auth-error');
         
-        // --- CODES SECURITY ENFORCEMENT ---
-        // Pre-seeded Admin/User
-        const adminEmail = "codex@agent.ai";
-        const adminPass = "concept_crush";
-        
+        // Demo-only local auth: accounts live in this browser's localStorage.
+        // There is intentionally no backdoor / hard-coded account here.
+        // Passwords are stored in plain text in localStorage, so never
+        // reuse a real password. See README "Security notes".
         const users = JSON.parse(localStorage.getItem('padhlo_users') || '[]');
-        const foundUser = users.find(u => u.email === email && u.pass === pass) || 
-                         (email === adminEmail && pass === adminPass ? { name: "Lead Explorer", email: adminEmail } : null);
+        const foundUser = users.find(u => u.email === email && u.pass === pass);
 
         if (foundUser) {
             this.showNotification("CODEX: Access Signature Verified. Welcome back, " + foundUser.name, "ai");
-            this.state.user = foundUser;
-            localStorage.setItem('padhlo_user', JSON.stringify(foundUser));
+            // Session stores identity only — never the password.
+            this.state.user = { name: foundUser.name, email: foundUser.email };
+            localStorage.setItem('padhlo_user', JSON.stringify(this.state.user));
             this.state.isLoggedIn = true;
             closeFn();
         } else {
@@ -656,10 +656,11 @@ const AppEngine = {
 
         users.push(newUser);
         localStorage.setItem('padhlo_users', JSON.stringify(users));
-        localStorage.setItem('padhlo_user', JSON.stringify(newUser));
+        // Session stores identity only — never the password.
+        localStorage.setItem('padhlo_user', JSON.stringify({ name, email }));
         
         this.showNotification(`CODEX: Neural Signature Created for Explorer ${name}. Welcome to the grid.`, "ai");
-        this.state.user = newUser;
+        this.state.user = { name, email };
         this.state.isLoggedIn = true;
         closeFn();
     },

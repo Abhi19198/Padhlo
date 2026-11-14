@@ -1,0 +1,13 @@
+{
+  "description": "Interactive coding career roadmaps for CS students (static site, no backend)",
+  "engines": {
+    "node": ">=18"
+  },
+  "name": "padhlo",
+  "private": true,
+  "scripts": {
+    "check": "node --check script.js && node --check data.js",
+    "test": "node --test tests/data.test.js tests/site.test.js tests/smoke.test.js"
+  },
+  "version": "1.0.0"
+}

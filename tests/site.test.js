@@ -39,11 +39,16 @@ test('no hard-coded credentials anywhere in the shipped code', () => {
   }
 });
 
-test('localStorage keys use the padhlo_ prefix', () => {
+test('localStorage keys use the padhlo_ prefix; no plain-text password store', () => {
   assert.ok(!/\bcc_/.test(js), 'script.js still uses cc_ localStorage keys');
-  for (const k of ['padhlo_user', 'padhlo_users', 'padhlo_visited']) {
+  for (const k of ['padhlo_user', 'padhlo_visited', 'padhlo_token']) {
     assert.ok(js.includes(k), `script.js missing ${k}`);
   }
+  // The old demo login stored passwords in plain text under padhlo_users.
+  // The only remaining mention must be the one-time cleanup removal.
+  assert.ok(!js.includes("localStorage.setItem('padhlo_users'"), 'script.js still writes the plain-text password store');
+  assert.ok(!js.includes('u.pass === pass'), 'script.js still compares plain-text passwords');
+  assert.ok(js.includes("localStorage.removeItem('padhlo_users')"), 'script.js does not clean up the legacy plain-text store');
 });
 
 test('session storage never stores a password', () => {

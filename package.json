@@ -1,13 +1,1 @@
-{
-  "description": "Interactive coding career roadmaps for CS students (static site, no backend)",
-  "engines": {
-    "node": ">=18"
-  },
-  "name": "padhlo",
-  "private": true,
-  "scripts": {
-    "check": "node --check script.js && node --check data.js",
-    "test": "node --test tests/data.test.js tests/site.test.js tests/smoke.test.js"
-  },
-  "version": "1.0.0"
-}
+{"dependencies":{"bcryptjs":"^3.0.3","express":"^5.2.1","jsonwebtoken":"^9.1.3"},"description":"Interactive coding career roadmaps for CS students — static frontend + Node/Express API with SQLite","engines":{"node":">=22.5"},"name":"padhlo","private":true,"scripts":{"check":"node --check script.js && node --check data.js && node --check server/server.js && node --check server/db.js && node --check server/auth.js","start":"node server/server.js","test":"node --test tests/data.test.js tests/site.test.js tests/smoke.test.js tests/api.test.js"},"version":"1.0.0"}

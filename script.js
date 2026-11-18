@@ -12,6 +12,7 @@ const AppEngine = {
         isBooting: true,
         isLoggedIn: false,
         user: null,
+        visited: [], // roadmap ids, from localStorage (guest) or the server
         dailyTarget: 3, // Target skills per day
         visitedToday: 0
     },
@@ -491,13 +492,88 @@ const AppEngine = {
         });
     },
 
-    // --- AUTH SYSTEM ---
-    initAuth() {
-        const savedUser = localStorage.getItem('padhlo_user');
-        if (savedUser) {
-            this.state.user = JSON.parse(savedUser);
-            this.state.isLoggedIn = true;
+    // --- AUTH SYSTEM (server-backed) ---
+    // Accounts live on the Padhlo server (see server/). Passwords are
+    // hashed with bcrypt and never stored in plain text anywhere.
+    // The JWT is kept in localStorage under padhlo_token; the session
+    // itself stores identity only ({ name, email }).
+    // When the backend is not running (plain static hosting), the app
+    // keeps working as a guest: journey progress stays in browser
+    // localStorage only.
+
+    async apiRequest(path, { method = 'GET', body = null, auth = false } = {}) {
+        if (typeof fetch !== 'function') return null; // jsdom / no network
+        const headers = { 'Content-Type': 'application/json' };
+        if (auth) {
+            const token = localStorage.getItem('padhlo_token');
+            if (!token) return null;
+            headers.Authorization = `Bearer ${token}`;
         }
+        try {
+            const res = await fetch(path, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok, status: res.status, data };
+        } catch {
+            return null; // server down — caller falls back to guest mode
+        }
+    },
+
+    async initAuth() {
+        // One-time cleanup: the old demo login stored passwords in plain
+        // text under padhlo_users. Remove it on sight.
+        localStorage.removeItem('padhlo_users');
+
+        // Guest progress is always available, even without a server.
+        this.state.visited = this.readGuestVisited();
+
+        const token = localStorage.getItem('padhlo_token');
+        if (!token) return;
+        const me = await this.apiRequest('/api/auth/me', { auth: true });
+        if (!me || !me.ok) {
+            localStorage.removeItem('padhlo_token');
+            localStorage.removeItem('padhlo_user');
+            return;
+        }
+        this.state.user = me.data.user;
+        this.state.isLoggedIn = true;
+        await this.loadServerJourney();
+    },
+
+    readGuestVisited() {
+        try {
+            const visited = JSON.parse(localStorage.getItem('padhlo_visited') || '[]');
+            return Array.isArray(visited) ? visited : [];
+        } catch {
+            return [];
+        }
+    },
+
+    async loadServerJourney() {
+        const res = await this.apiRequest('/api/journey', { auth: true });
+        if (!res || !res.ok) return;
+        // Union: keep anything the guest explored before logging in.
+        const merged = [...new Set([...this.state.visited, ...res.data.visited])];
+        this.state.visited = merged;
+        localStorage.setItem('padhlo_visited', JSON.stringify(merged));
+        if (merged.length !== res.data.visited.length) {
+            await this.apiRequest('/api/journey', { method: 'POST', auth: true, body: { visited: merged } });
+        }
+        this.refreshJourneyPage();
+    },
+
+    refreshJourneyPage() {
+        const page = new URLSearchParams(window.location.search).get('page');
+        if (page === 'journey') this.renderJourneyPage();
+    },
+
+    // Fire-and-forget sync of journey progress to the server (logged in only).
+    syncJourneyToServer() {
+        if (!this.state.isLoggedIn) return;
+        this.apiRequest('/api/journey', { method: 'POST', auth: true, body: { visited: this.state.visited } });
     },
 
     updateAuthUI() {
@@ -522,7 +598,9 @@ const AppEngine = {
         }
     },
 
-    logout() {
+    async logout() {
+        await this.apiRequest('/api/auth/logout', { method: 'POST', auth: true });
+        localStorage.removeItem('padhlo_token');
         localStorage.removeItem('padhlo_user');
         this.state.user = null;
         this.state.isLoggedIn = false;
@@ -538,7 +616,7 @@ const AppEngine = {
                 <div style="background: linear-gradient(to right, #ff9d00, #ff4d00); padding: 25px; text-align: center;">
                     <h2 style="color: #000; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; font-size: 1.2rem;">NEURAL ACCESS CONTROL</h2>
                     <p style="color: #000; font-size: 0.75rem; font-weight: 700; opacity: 0.8;">C.O.D.E.X. SECURE PROTOCOL v4.0</p>
-                    <p style="color: #000; font-size: 0.75rem; margin-top: 6px;">Demo login only — accounts are stored in this browser, not on a server. Do not reuse a real password.</p>
+                    <p style="color: #000; font-size: 0.75rem; margin-top: 6px;">Accounts live on the Padhlo server. Passwords are hashed — never stored in plain text.</p>
                 </div>
                 <div style="padding: 35px;">
                     <div class="auth-tabs" style="border-bottom: 2px solid rgba(255,157,0,0.1); margin-bottom: 30px;">
@@ -617,51 +695,51 @@ const AppEngine = {
         };
     },
 
-    handleLogin(email, pass, closeFn) {
+    async handleLogin(email, pass, closeFn) {
         const errorEl = document.getElementById('auth-error');
-        
-        // Demo-only local auth: accounts live in this browser's localStorage.
-        // There is intentionally no backdoor / hard-coded account here.
-        // Passwords are stored in plain text in localStorage, so never
-        // reuse a real password. See README "Security notes".
-        const users = JSON.parse(localStorage.getItem('padhlo_users') || '[]');
-        const foundUser = users.find(u => u.email === email && u.pass === pass);
-
-        if (foundUser) {
-            this.showNotification("CODEX: Access Signature Verified. Welcome back, " + foundUser.name, "ai");
-            // Session stores identity only — never the password.
-            this.state.user = { name: foundUser.name, email: foundUser.email };
-            localStorage.setItem('padhlo_user', JSON.stringify(this.state.user));
-            this.state.isLoggedIn = true;
-            closeFn();
-        } else {
+        const showError = (msg) => {
+            errorEl.textContent = msg || 'INVALID ACCESS SIGNATURE DETECTED';
             errorEl.style.display = 'block';
-            this.showNotification("CODEX: Error. Invalid access credentials detected.", "info");
+        };
+        const res = await this.apiRequest('/api/auth/login', { method: 'POST', body: { email, password: pass } });
+        if (!res) {
+            showError('SERVER OFFLINE — START THE BACKEND WITH npm start');
+            this.showNotification('CODEX: Error. The Padhlo server is not running.', 'info');
+            return;
         }
+        if (!res.ok) {
+            showError((res.data.error || 'INVALID ACCESS SIGNATURE DETECTED').toUpperCase());
+            this.showNotification('CODEX: Error. Invalid access credentials detected.', 'info');
+            return;
+        }
+        localStorage.setItem('padhlo_token', res.data.token);
+        this.state.user = { name: res.data.user.name, email: res.data.user.email };
+        localStorage.setItem('padhlo_user', JSON.stringify(this.state.user));
+        this.state.isLoggedIn = true;
+        this.showNotification('CODEX: Access Signature Verified. Welcome back, ' + this.state.user.name, 'ai');
+        await this.loadServerJourney();
+        closeFn();
     },
 
-    handleSignup(closeFn) {
+    async handleSignup(closeFn) {
         const name = document.getElementById('signup-name').value;
         const email = document.getElementById('signup-email').value;
         const pass = document.getElementById('signup-pass').value;
-        
-        const newUser = { name, email, pass };
-        const users = JSON.parse(localStorage.getItem('padhlo_users') || '[]');
-        
-        // Check if email already exists
-        if (users.some(u => u.email === email)) {
-            this.showNotification("CODEX: Error. Designation already exists in local database.", "info");
+        const res = await this.apiRequest('/api/auth/signup', { method: 'POST', body: { name, email, password: pass } });
+        if (!res) {
+            this.showNotification('CODEX: Error. The Padhlo server is not running.', 'info');
             return;
         }
-
-        users.push(newUser);
-        localStorage.setItem('padhlo_users', JSON.stringify(users));
-        // Session stores identity only — never the password.
-        localStorage.setItem('padhlo_user', JSON.stringify({ name, email }));
-        
-        this.showNotification(`CODEX: Neural Signature Created for Explorer ${name}. Welcome to the grid.`, "ai");
-        this.state.user = { name, email };
+        if (!res.ok) {
+            this.showNotification('CODEX: Error. ' + (res.data.error || 'Signup failed.'), 'info');
+            return;
+        }
+        localStorage.setItem('padhlo_token', res.data.token);
+        this.state.user = { name: res.data.user.name, email: res.data.user.email };
+        localStorage.setItem('padhlo_user', JSON.stringify(this.state.user));
         this.state.isLoggedIn = true;
+        this.showNotification(`CODEX: Neural Signature Created for Explorer ${name}. Welcome to the grid.`, 'ai');
+        await this.loadServerJourney();
         closeFn();
     },
 
@@ -726,8 +804,10 @@ const AppEngine = {
             if (!visited.includes(e.detail.id)) {
                 visited.push(e.detail.id);
                 localStorage.setItem('padhlo_visited', JSON.stringify(visited));
+                this.state.visited = visited;
                 this.state.visitedToday++;
                 this.showNotification(`CODEX: Knowledge logged for ${e.detail.title}. Database updated.`, "ai");
+                this.syncJourneyToServer();
             }
         });
     },
@@ -838,8 +918,11 @@ const AppEngine = {
             return { skill, matches };
         });
 
-        // Ensure we find the best match
-        const recommendation = allScores.sort((a, b) => b.matches - a.matches)[0].skill;
+        // Rank all roadmaps by keyword matches; keep the top pick and
+        // the next closest ones so the user sees WHY it was recommended.
+        const ranked = allScores.sort((a, b) => b.matches - a.matches);
+        const recommendation = ranked[0].skill;
+        const runnersUp = ranked.slice(1, 3).filter(r => r.matches > 0);
 
         container.innerHTML = `
             <div style="text-align: center;">
@@ -850,6 +933,14 @@ const AppEngine = {
                 
                 <h3 style="font-size: 1.5rem; margin-bottom: 10px;">${recommendation.title}</h3>
                 <p style="margin: 0 auto 30px auto; color: var(--text-muted); max-width: 400px; line-height: 1.5;">${recommendation.shortDesc}</p>
+                <p style="margin: -18px auto 30px auto; color: var(--primary); font-size: 0.8rem; font-family: 'Share Tech Mono', monospace;">MATCHED ${ranked[0].matches} OF ${scores.length} SIGNALS</p>
+                ${runnersUp.length ? `
+                <div style="margin: 0 auto 30px auto; max-width: 400px; text-align: left;">
+                    <h4 style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem;">Also close for you:</h4>
+                    ${runnersUp.map(r => `
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 6px 0;">${r.skill.icon} ${r.skill.title} — matched ${r.matches} of ${scores.length} signals</p>
+                    `).join('')}
+                </div>` : ''}
                 
                 <div style="background: rgba(10, 10, 10, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; text-align: left;">
                     <h4 style="margin-bottom: 15px; color: var(--secondary); display: flex; align-items: center; gap: 10px;">
@@ -880,7 +971,7 @@ const AppEngine = {
     },
 
     renderJourneyPage() {
-        const visited = JSON.parse(localStorage.getItem('padhlo_visited') || '[]');
+        const visited = this.state.visited || [];
         const progressPercent = Math.round((visited.length / skillsData.length) * 100);
         
         // Circular Progress Math
@@ -940,6 +1031,7 @@ const AppEngine = {
                         <div style="height: 4px; background: rgba(255, 157, 0, 0.1);">
                             <div style="width: ${progressPercent}%; height: 100%; background: #ff9d00; box-shadow: 0 0 15px #ff9d00;"></div>
                         </div>
+                        <p style="margin-top: 12px; font-family: 'Share Tech Mono', monospace; color: var(--text-muted); font-size: 0.8rem;">${visited.length} / ${skillsData.length} roadmaps explored${this.state.isLoggedIn ? ' — synced to your account' : ' — sign in to sync across devices'}</p>
                     </div>
                 </div>
 

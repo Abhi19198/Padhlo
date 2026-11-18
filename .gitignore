@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 *.log
+# SQLite database (created at runtime) and local secrets — never commit.
+data/
+.env
